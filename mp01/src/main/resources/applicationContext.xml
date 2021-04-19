@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <context:property-placeholder location="classpath:db.properties"/>
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver}"></property>
+        <property name="jdbcUrl" value="${jdbc.url}"></property>
+        <property name="user" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>
+
+    <bean id="sqlSessionFactoryBean" class="com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="typeAliasesPackage" value="com.mp.beans"></property>
+<!--        <property name="configuration" ref="configuration"/> &lt;!&ndash;  非必须  &ndash;&gt;-->
+        <property name="globalConfig" ref="globalConfig"/> <!--  非必须  -->
+        <property name="plugins">
+            <array>
+
+                <bean class="com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor">
+                    <property name="interceptors">
+                        <list>
+                            <bean class="com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor"></bean>
+
+                            <bean class="com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor"></bean>
+
+                            <bean class="com.baomidou.mybatisplus.extension.plugins.inner.IllegalSQLInnerInterceptor">
+
+                            </bean>
+                            <bean class="com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor"></bean>
+                        </list>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+
+<!--    <bean id="countSqlParser" class="com.baomidou.mybatisplus.extension.plugins.pagination.optimize.JsqlParserCountOptimize">-->
+<!--        &lt;!&ndash; 设置为 true 可以优化部分 left join 的sql &ndash;&gt;-->
+<!--        <property name="optimizeJoin" value="true"/>-->
+<!--    </bean>-->
+
+
+    <!--    <bean id="configuration" class="com.baomidou.mybatisplus.core.MybatisConfiguration">-->
+<!--    </bean>-->
+
+    <bean id="globalConfig" class="com.baomidou.mybatisplus.core.config.GlobalConfig">
+        <property name="dbConfig" ref="dbConfig"/> <!--  非必须  -->
+    </bean>
+
+    <bean id="dbConfig" class="com.baomidou.mybatisplus.core.config.GlobalConfig.DbConfig">
+        <property name="idType" value="AUTO"></property>
+        <property name="tablePrefix" value="tbl_"></property>
+<!--        <property name="" ref="myMetaObjectHandler"></property>-->
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.mp.mapper"></property>
+    </bean>
+
+    <bean id="myMetaObjectHandler" class="com.mp.metaObjectHandler.MyMetaObjectHandler"></bean>
+
+
+</beans>
